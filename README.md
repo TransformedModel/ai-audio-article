@@ -22,6 +22,9 @@ AudioArticle is a high-quality web application that transforms written articles 
 <img src='/images/landing-2.png' width=800>
 - At first read this list looks quite good. But if we navigate to _any_ of those links, we will see:
 <img src="images/oops.png" width=800>
+
+![img alt](https://github.com/TransformedModel/ai-audio-article/blob/7075e8d2b8e7ecf45adf50f519a91e5446d40e18/images/oops.png)
+
 - So the **AI hallucinated a pretty believable list of articles**. What happens if we ask it to fetch any of these links to produce an audio version?
 <img src="images/gen-article-1.png" width=800>
 <img src="images/gen-article-2.png" width=800>
