@@ -133,11 +133,14 @@ export default function App() {
     }
   }, [playbackSpeed, audioUrl]);
 
+  const [extractionStep, setExtractionStep] = useState<string | null>(null);
+
   const handleExtract = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url) return;
 
     setIsExtracting(true);
+    setExtractionStep('Fetching article content...');
     setError(null);
     setArticleText(null);
     setAudioUrl(null);
@@ -151,41 +154,39 @@ export default function App() {
 
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text();
-        throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}`);
+        throw new Error(`Server returned invalid response.`);
       }
 
       const data = await response.json();
       if (!response.ok) {
-        // Fallback to Gemini URL Context if backend fetch is forbidden or fails
-        if (response.status === 403 || response.status === 500) {
-          console.log("Backend fetch failed, trying Gemini URL Context fallback...");
-          const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-          const geminiResponse = await ai.models.generateContent({
-            model: "gemini-3-flash-preview",
-            contents: `Extract the main article text from this URL for narration. Return ONLY the article text, no summary or intro: ${url}`,
-            config: {
-              tools: [{ urlContext: {} }]
-            },
-          });
-          
-          if (geminiResponse.text) {
-            setArticleText(geminiResponse.text);
-            return;
-          }
+        // Fallback to Gemini URL Context for ANY non-OK response (403, 404, 408, 500, etc.)
+        setExtractionStep(`Backend fetch failed (Status: ${response.status}), using AI extraction fallback...`);
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+        const geminiResponse = await ai.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: `Extract the main article text from this URL for narration. If the page is not found or restricted, try to find the archived content or a summary of the article at this URL. Return ONLY the article text: ${url}`,
+          config: {
+            tools: [{ urlContext: {} }]
+          },
+        });
+        
+        if (geminiResponse.text && geminiResponse.text.length > 100) {
+          setArticleText(geminiResponse.text);
+          return;
         }
-        throw new Error(data.error || 'Failed to extract article');
+        
+        throw new Error(data.error || `Failed to extract article (Status: ${response.status})`);
       }
 
       setArticleText(data.text);
     } catch (err: any) {
       // Final fallback attempt if the catch block was reached due to a network error
       try {
-        console.log("Network error or exception, trying Gemini URL Context fallback...");
+        setExtractionStep('Attempting final AI recovery...');
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
         const geminiResponse = await ai.models.generateContent({
           model: "gemini-3-flash-preview",
-          contents: `Extract the main article text from this URL for narration. Return ONLY the article text, no summary or intro: ${url}`,
+          contents: `Extract the main article text from this URL for narration. Return ONLY the article text: ${url}`,
           config: {
             tools: [{ urlContext: {} }]
           },
@@ -198,9 +199,10 @@ export default function App() {
       } catch (fallbackErr) {
         console.error("Fallback also failed:", fallbackErr);
       }
-      setError(err.message);
+      setError(err.message.replace('Error: ', ''));
     } finally {
       setIsExtracting(false);
+      setExtractionStep(null);
     }
   };
 
@@ -419,10 +421,17 @@ export default function App() {
               className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-neutral-300 disabled:cursor-not-allowed text-white font-medium rounded-2xl transition-all flex items-center justify-center gap-2 text-lg shadow-sm"
             >
               {isExtracting ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Extracting Content...
-                </>
+                <div className="flex flex-col items-center gap-1">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Extracting...</span>
+                  </div>
+                  {extractionStep && (
+                    <span className="text-[10px] opacity-70 font-normal animate-pulse">
+                      {extractionStep}
+                    </span>
+                  )}
+                </div>
               ) : (
                 <>
                   <CheckCircle2 className="w-5 h-5" />

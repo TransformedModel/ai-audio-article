@@ -13,6 +13,18 @@ AudioArticle is a high-quality web application that transforms written articles 
 - **Easy Sharing**: Integrated share functionality to quickly send article links to others.
 - **Modern Responsive UI**: A clean, minimal interface built with **Tailwind CSS** and **Lucide Icons**.
 
+## Hallucination capabilities
+- The application suggests some articles to listen to. These articles are from reputed sources like The Wired, Stratechery, The Verge etc. These sources were specifically supplied as part of a prompt. 
+![landing page](images/landing-2.png)
+- At first read this list looks quite good. But if we navigate to _any_ of those links, we will see:
+![oops](images/oops.png)
+- So the **AI hallucinated a pretty believable list of articles**. What happens if we ask it to fetch any of these links to produce an audio version?
+![Generated article](images/gen-article-1.png)
+![Generated article](images/gen-article-2.png)
+As you can see, the **AI hallucinates the entire article!** And produces an audio version to boot.
+I don't know about you but I find this absolutely fascinating.
+
+
 ## 🚀 Tech Stack
 
 - **Frontend**: React, Vite, Tailwind CSS, Lucide React, Framer Motion.

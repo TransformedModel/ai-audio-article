@@ -17,20 +17,30 @@ async function startServer() {
     }
 
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
       const response = await fetch(url, {
+        signal: controller.signal,
         headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
           "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
           "Accept-Language": "en-US,en;q=0.9",
-          "Referer": "https://www.google.com/",
-          "DNT": "1",
-          "Connection": "keep-alive",
+          "Cache-Control": "no-cache",
+          "Pragma": "no-cache",
+          "Sec-Ch-Ua": '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+          "Sec-Ch-Ua-Mobile": "?0",
+          "Sec-Ch-Ua-Platform": '"macOS"',
+          "Sec-Fetch-Dest": "document",
+          "Sec-Fetch-Mode": "navigate",
+          "Sec-Fetch-Site": "none",
+          "Sec-Fetch-User": "?1",
           "Upgrade-Insecure-Requests": "1"
         }
-      });
+      }).finally(() => clearTimeout(timeout));
 
       if (response.status === 403) {
-        throw new Error("Access Forbidden: This website blocks automated access. Try a different article or source.");
+        throw new Error("Access Forbidden: This website blocks automated access.");
       }
 
       if (!response.ok) {
@@ -39,26 +49,74 @@ async function startServer() {
       const html = await response.text();
       const $ = cheerio.load(html);
 
-      // Basic article extraction logic
-      // Remove scripts, styles, nav, footer
-      $("script, style, nav, footer, header, aside").remove();
+      // Remove non-content elements
+      $("script, style, nav, footer, header, aside, .ads, .sidebar, .menu, .nav, .footer").remove();
 
-      // Try to find the main content
-      let content = $("article").text() || $("main").text() || $("body").text();
+      // Targeted extraction for common article structures
+      let content = "";
+      
+      // Order of preference for content containers
+      const selectors = [
+        "article",
+        '[itemprop="articleBody"]',
+        ".article-content",
+        ".post-content",
+        ".entry-content",
+        "main",
+        "#main-content",
+        ".main-content"
+      ];
+
+      for (const selector of selectors) {
+        const element = $(selector);
+        if (element.length > 0) {
+          // Get text from paragraphs to avoid junk
+          const paragraphs = element.find("p");
+          if (paragraphs.length > 0) {
+            content = paragraphs.map((_, el) => $(el).text()).get().join("\n\n");
+          } else {
+            content = element.text();
+          }
+          if (content.trim().length > 200) break;
+        }
+      }
+
+      // Fallback to body if no specific container found or content too short
+      if (!content || content.trim().length < 200) {
+        content = $("body").find("p").map((_, el) => $(el).text()).get().join("\n\n");
+      }
       
       // Clean up whitespace
       content = content.replace(/\s+/g, " ").trim();
 
-      // Limit content length for TTS (Gemini TTS has limits, let's keep it reasonable)
-      // If it's too long, we'll just take the first 5000 characters for now
-      if (content.length > 5000) {
-        content = content.substring(0, 5000) + "...";
+      if (!content || content.length < 100) {
+        throw new Error("Could not extract meaningful content from this page.");
+      }
+
+      // Limit content length for TTS
+      if (content.length > 8000) {
+        content = content.substring(0, 8000) + "...";
       }
 
       res.json({ text: content });
     } catch (error: any) {
       console.error("Extraction error:", error);
-      res.status(500).json({ error: error.message });
+      
+      let status = 500;
+      let message = error.message;
+
+      if (error.name === 'AbortError') {
+        status = 408;
+        message = "Request timed out. The website is taking too long to respond.";
+      } else if (error.message.includes('(') && error.message.includes(')')) {
+        // Extract status code from our custom error message if present
+        const match = error.message.match(/\((\d+)\)/);
+        if (match) {
+          status = parseInt(match[1]);
+        }
+      }
+
+      res.status(status).json({ error: message });
     }
   });
 
