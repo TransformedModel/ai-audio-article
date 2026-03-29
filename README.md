@@ -16,7 +16,8 @@ AudioArticle is a high-quality web application that transforms written articles 
 ## Hallucination capabilities
 - The application suggests some articles to listen to. These articles are from reputed sources like The Wired, Stratechery, The Verge etc. These sources were specifically supplied as part of a prompt. 
 <img src="images/landing-2.png" width=800>
-![Landing page](https://github.com/TransformedModel/ai-audio-article/blob/main/images/landing-2.png)
+![Landing page](https://github.com/TransformedModel/ai-audio-article/blob/main/images/landing-2.png?raw=true)
+
 <img src="/images/landing-2.png" width=800>
 <img src='/images/landing-2.png' width=800>
 - At first read this list looks quite good. But if we navigate to _any_ of those links, we will see:
