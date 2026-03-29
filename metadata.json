@@ -1,0 +1,5 @@
+{
+  "name": "AudioArticle",
+  "description": "Convert any article URL into a high-quality narrated audio experience with customizable voices.",
+  "requestFramePermissions": []
+}

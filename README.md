@@ -1,11 +1,69 @@
-<div align="center">
+# AudioArticle 🎧
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+AudioArticle is a high-quality web application that transforms written articles into natural-sounding narrated audio experiences. Powered by the Gemini 2.5 Flash TTS model, it allows users to consume their favorite content while on the go.
 
-  <h1>Built with AI Studio</h2>
+## ✨ Features
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+- **Smart Article Extraction**: Automatically fetches and cleans content from any article URL using a custom Express backend with a fallback to Gemini's URL Context tool.
+- **High-Quality Narration**: Uses the **Gemini 2.5 Flash TTS** model for natural, human-like speech.
+- **Customizable Voices**: Choose from 5 distinct voice profiles (**Kore, Puck, Charon, Fenrir, Zephyr**) to match the article's tone.
+- **Adjustable Playback Speed**: Listen at your own pace with presets ranging from **1x to 2x**.
+- **Live Remaining Timer**: A real-time countdown that adjusts based on your selected playback speed.
+- **Curated Suggestions**: A "Trending Now" section with recent articles from top publications like **The Verge, NYT, Wired, and Stratechery**.
+- **Easy Sharing**: Integrated share functionality to quickly send article links to others.
+- **Modern Responsive UI**: A clean, minimal interface built with **Tailwind CSS** and **Lucide Icons**.
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+## 🚀 Tech Stack
 
-</div>
+- **Frontend**: React, Vite, Tailwind CSS, Lucide React, Framer Motion.
+- **Backend**: Node.js, Express, Cheerio (for web scraping).
+- **AI Engine**: Google Gemini API (@google/genai).
+
+## 🛠️ Getting Started
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- A Google Gemini API Key (Get one at [ai.google.dev](https://ai.google.dev/))
+
+### Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-username/audio-article.git
+   cd audio-article
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**:
+   Create a `.env` file in the root directory and add your Gemini API key:
+   ```env
+   GEMINI_API_KEY=your_actual_api_key_here
+   ```
+
+4. **Run the development server**:
+   ```bash
+   npm run dev
+   ```
+   The app will be available at `http://localhost:3000`.
+
+## 📦 Deployment
+
+This app is designed to be deployed as a full-stack application.
+
+- **Build the project**:
+  ```bash
+  npm run build
+  ```
+- **Start the production server**:
+  ```bash
+  npm start
+  ```
+
+## 📄 License
+
+This project is licensed under the Apache-2.0 License.
