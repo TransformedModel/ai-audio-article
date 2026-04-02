@@ -385,6 +385,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] text-[#1a1a1a] font-sans selection:bg-emerald-100">
+      {/* AI Hallucination Warning Banner */}
+      <div className="bg-yellow-400 text-black py-3 px-4 text-center font-bold text-sm md:text-base border-b border-black/10 sticky top-0 z-50 shadow-sm">
+        <div className="flex items-center justify-center gap-2">
+          <AlertCircle className="w-4 h-4" />
+          <span>Suggested articles are AI hallucinations.</span>
+        </div>
+      </div>
+
       <div className="max-w-3xl mx-auto px-6 py-12 md:py-24">
         {/* Header */}
         <header className="mb-12 text-center">
